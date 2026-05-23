@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package searchv1;
+
+option go_package = "github.com/Karambollla/wb-search/api/proto/searchv1;searchv1";
+
+service TopService {
+  rpc GetTop(GetTopRequest) returns (GetTopResponse);
+}
+
+service StopListService {
+  rpc ListStopWords(ListStopWordsRequest) returns (ListStopWordsResponse);
+  rpc AddStopWord(StopWordRequest) returns (StopWordResponse);
+  rpc DeleteStopWord(StopWordRequest) returns (StopWordResponse);
+}
+
+message GetTopRequest {
+  int32 limit = 1;
+}
+
+message TopItem {
+  string query = 1;
+  int64 count = 2;
+}
+
+message GetTopResponse {
+  repeated TopItem items = 1;
+}
+
+message ListStopWordsRequest {}
+
+message ListStopWordsResponse {
+  repeated string items = 1;
+}
+
+message StopWordRequest {
+  string term = 1;
+}
+
+message StopWordResponse {
+  string term = 1;
+}
