@@ -2,10 +2,10 @@ run:
 	go run ./cmd/server
 
 unit:
-	go test -v -count=1 ./api/... ./cmd/... ./internal/...
+	go test -v ./api/... ./cmd/... ./internal/...
 
 test:
-	go test -v ./...
+	go test -v ./tests
 
 bench:
 	go test -bench=. -benchmem ./internal/core

@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,12 +20,17 @@ type Metrics interface {
 type Server struct {
 	service core.TopService
 	mux     *http.ServeMux
+	log     *slog.Logger
 }
 
-func NewServer(service core.TopService, metricsHandler http.Handler) *Server {
+func NewServer(service core.TopService, metricsHandler http.Handler, log *slog.Logger) *Server {
+	if log == nil {
+		log = slog.Default()
+	}
 	s := &Server{
 		service: service,
 		mux:     http.NewServeMux(),
+		log:     log,
 	}
 	if metricsHandler == nil {
 		metricsHandler = promhttp.Handler()
@@ -96,6 +102,7 @@ func (s *Server) addStopWord(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	s.log.Info("stop word added", "term", core.NormalizeQuery(req.Term))
 	writeJSON(w, http.StatusCreated, map[string]string{"term": core.NormalizeQuery(req.Term)})
 }
 
@@ -109,6 +116,7 @@ func (s *Server) deleteStopWord(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	s.log.Info("stop word deleted", "term", core.NormalizeQuery(term))
 	writeJSON(w, http.StatusOK, map[string]string{"term": core.NormalizeQuery(term)})
 }
 

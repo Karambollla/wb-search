@@ -30,7 +30,7 @@ func (s *stubService) AddStopWord(_ context.Context, term string) error {
 func (s *stubService) DeleteStopWord(context.Context, string) error { return nil }
 
 func TestTopHandler(t *testing.T) {
-	server := NewServer(&stubService{top: []core.TopItem{{Query: "носки", Count: 2}}}, nil)
+	server := NewServer(&stubService{top: []core.TopItem{{Query: "носки", Count: 2}}}, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/v1/top?limit=10", nil)
 	rec := httptest.NewRecorder()
 
@@ -46,7 +46,7 @@ func TestTopHandler(t *testing.T) {
 
 func TestAddStopWordHandler(t *testing.T) {
 	service := &stubService{}
-	server := NewServer(service, nil)
+	server := NewServer(service, nil, nil)
 	req := httptest.NewRequest(http.MethodPost, "/v1/stoplist", bytes.NewBufferString(`{"term":"  Spam  "}`))
 	rec := httptest.NewRecorder()
 

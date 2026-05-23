@@ -66,7 +66,7 @@ func run() error {
 
 	httpServer := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           httpadapter.NewServer(service, promhttp.HandlerFor(registry, promhttp.HandlerOpts{})).Handler(),
+		Handler:           httpadapter.NewServer(service, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}), log).Handler(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

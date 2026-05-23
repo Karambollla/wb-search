@@ -3,6 +3,7 @@ package nats
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -29,6 +30,7 @@ type Subscriber struct {
 }
 
 func NewSubscriber(url, subject string, service core.EventIngestor, log *slog.Logger) (*Subscriber, error) {
+	log.Info("connecting to nats", "url", url, "subject", subject)
 	conn, err := nats.Connect(url)
 	if err != nil {
 		return nil, fmt.Errorf("connect nats: %w", err)
@@ -38,6 +40,7 @@ func NewSubscriber(url, subject string, service core.EventIngestor, log *slog.Lo
 		conn.Close()
 		return nil, fmt.Errorf("subscribe nats: %w", err)
 	}
+	log.Info("subscribed to nats subject", "subject", subject)
 	return &Subscriber{conn: conn, sub: sub, service: service, log: log}, nil
 }
 
@@ -57,6 +60,7 @@ func (s *Subscriber) Start(ctx context.Context) {
 			s.log.Warn("failed to decode search event", "error", err)
 			continue
 		}
+		s.log.Info("search event received", "subject", msg.Subject, "query", payload.Query, "user_id", payload.UserID, "session_id", payload.SessionID)
 
 		err = s.service.Ingest(ctx, core.SearchEvent{
 			Query:     payload.Query,
@@ -66,9 +70,15 @@ func (s *Subscriber) Start(ctx context.Context) {
 			IP:        payload.IP,
 			Source:    payload.Source,
 		})
-		if err != nil && err != core.ErrEmptyQuery {
-			s.log.Warn("failed to ingest search event", "error", err)
+		if errors.Is(err, core.ErrEmptyQuery) {
+			s.log.Info("search event dropped", "reason", "empty_query")
+			continue
 		}
+		if err != nil {
+			s.log.Warn("failed to ingest search event", "error", err)
+			continue
+		}
+		s.log.Info("search event ingested", "query", payload.Query, "user_id", payload.UserID, "session_id", payload.SessionID)
 	}
 }
 
