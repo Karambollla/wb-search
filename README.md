@@ -61,6 +61,68 @@ HTTP:
 
 gRPC-контракт описан в `api/proto/searchv1/search.proto`.
 
+## Примеры запросов
+
+Healthcheck:
+
+```bash
+curl http://localhost:8080/healthz
+```
+
+Отправить события в брокер:
+
+```bash
+nats pub search.events '{"query":"кроссовки nike","user_id":"u1","session_id":"s1"}'
+nats pub search.events '{"query":"кроссовки nike","user_id":"u2","session_id":"s2"}'
+nats pub search.events '{"query":"iphone 15","user_id":"u3","session_id":"s3"}'
+```
+
+Получить топ запросов:
+
+```bash
+curl 'http://localhost:8080/v1/top?limit=10'
+```
+
+Посмотреть стоп-лист:
+
+```bash
+curl http://localhost:8080/v1/stoplist
+```
+
+Добавить слово в стоп-лист:
+
+```bash
+curl -X POST http://localhost:8080/v1/stoplist \
+  -H 'Content-Type: application/json' \
+  -d '{"term":"iphone 15"}'
+```
+
+Удалить слово из стоп-листа:
+
+```bash
+curl -X DELETE http://localhost:8080/v1/stoplist/iphone%2015
+```
+
+Получить метрики:
+
+```bash
+curl http://localhost:8080/metrics
+```
+
+gRPC top:
+
+```bash
+grpcurl -plaintext -d '{"limit":10}' localhost:9090 searchv1.TopService/GetTop
+```
+
+gRPC стоп-лист:
+
+```bash
+grpcurl -plaintext localhost:9090 searchv1.StopListService/ListStopWords
+grpcurl -plaintext -d '{"term":"spam"}' localhost:9090 searchv1.StopListService/AddStopWord
+grpcurl -plaintext -d '{"term":"spam"}' localhost:9090 searchv1.StopListService/DeleteStopWord
+```
+
 ## Контракт брокера
 
 NATS subject: `search.events`.
