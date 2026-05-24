@@ -31,7 +31,7 @@ proto:
 		api/proto/searchv1/search.proto
 
 up:
-	${container_runtime} compose up --build -d
+	${container_runtime} compose up --build -d app nats
 
 down:
 	${container_runtime} compose down --remove-orphans
