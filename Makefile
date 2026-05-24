@@ -6,7 +6,8 @@ run:
 	go run ./cmd/server
 
 unit:
-	go test -v ./api/... ./cmd/... ./internal/...
+	go test -race -coverprofile cover.out \
+		./cmd/... ./internal/...
 
 test:
 	make clean
@@ -25,7 +26,7 @@ bench:
 	go test -bench=. -benchmem ./internal/core
 
 proto:
-	PATH="$$(go env GOPATH)/bin:$$PATH" protoc --go_out=. --go_opt=paths=source_relative \
+	protoc --go_out=. --go_opt=paths=source_relative \
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
 		api/proto/searchv1/search.proto
 
@@ -37,4 +38,4 @@ down:
 
 clean:
 	${container_runtime} compose down --remove-orphans
-	rm -rf .cache bin coverage.out *.test
+	rm -rf .cache bin cover.out coverage.out *.test

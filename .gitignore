@@ -4,4 +4,4 @@ bin/
 coverage.out
 dist/
 *.test
-.md
+*.md
