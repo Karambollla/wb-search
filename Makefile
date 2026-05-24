@@ -1,3 +1,7 @@
+container_runtime := $(shell which podman || which docker)
+
+$(info using ${container_runtime})
+
 run:
 	go run ./cmd/server
 
@@ -5,7 +9,17 @@ unit:
 	go test -v ./api/... ./cmd/... ./internal/...
 
 test:
-	go test -v ./tests
+	make clean
+	make up
+	@echo wait cluster to start && sleep 5
+	make run-tests; status=$$?; make clean; exit $$status
+	@echo "test finished"
+
+integration:
+	make run-tests
+
+run-tests:
+	${container_runtime} run --rm --network=host wb-search-tests:latest
 
 bench:
 	go test -bench=. -benchmem ./internal/core
@@ -16,10 +30,11 @@ proto:
 		api/proto/searchv1/search.proto
 
 up:
-	docker compose up --build
+	${container_runtime} compose up --build -d
 
 down:
-	docker compose down --remove-orphans
+	${container_runtime} compose down --remove-orphans
 
 clean:
+	${container_runtime} compose down --remove-orphans
 	rm -rf .cache bin coverage.out *.test

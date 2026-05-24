@@ -1,0 +1,6 @@
+.cache/
+.git/
+bin/
+coverage.out
+*.test
+task.md
